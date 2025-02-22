@@ -22,13 +22,57 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Airplane
+        fields = (
+            "id",
+            "name",
+            "rows",
+            "seats_in_row",
+            "airplane_type",
+            "capacity",
+            "image"
+        )
+
+
+class AirplaneListSerializer(AirplaneSerializer):
     airplane_type = serializers.SlugRelatedField(
         many=False, read_only=True, slug_field="name"
     )
 
     class Meta:
         model = Airplane
-        fields = ("id", "name", "rows", "seats_in_row", "airplane_type", "capacity")
+        fields = (
+            "id",
+            "name",
+            "rows",
+            "seats_in_row",
+            "airplane_type",
+            "capacity",
+            "image"
+        )
+
+
+class AirplaneDetailSerializer(AirplaneSerializer):
+    airplane_type = AirplaneTypeSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Airplane
+        fields = (
+            "id",
+            "name",
+            "rows",
+            "seats_in_row",
+            "airplane_type",
+            "capacity",
+            "image"
+        )
+
+
+class AirplaneImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Airplane
+        fields = ("id", "image")
 
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -103,8 +147,11 @@ class FlightListSerializer(FlightSerializer):
     airplane_name = serializers.CharField(
         source="airplane.name", read_only=True
     )
+    airplane_image = serializers.ImageField(
+        source="airplane.image", read_only=True
+    )
     airplane_capacity = serializers.IntegerField(
-        source="cinema_hall.capacity", read_only=True
+        source="airplane.capacity", read_only=True
     )
     tickets_available = serializers.IntegerField(read_only=True)
 
@@ -115,6 +162,7 @@ class FlightListSerializer(FlightSerializer):
             "departure_time",
             "arrival_time",
             "airplane_name",
+            "airplane_image",
             "airplane_capacity",
             "route",
             "crew",
