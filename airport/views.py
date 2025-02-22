@@ -16,6 +16,7 @@ from airport.models import (
     Flight,
     Order
 )
+from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airport.serializers import (
     AirplaneTypeSerializer,
     AirplaneSerializer,
@@ -40,7 +41,7 @@ class AirplaneTypeViewSet(
 ):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class AirplaneViewSet(
@@ -50,7 +51,7 @@ class AirplaneViewSet(
 ):
     queryset = Airplane.objects.select_related("airplane_type")
     serializer_class = AirplaneSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class CountryViewSet(
@@ -60,7 +61,7 @@ class CountryViewSet(
 ):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class AirportViewSet(
@@ -70,7 +71,7 @@ class AirportViewSet(
 ):
     queryset = Airport.objects.select_related("country")
     serializer_class = AirportSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class RouteViewSet(
@@ -81,21 +82,25 @@ class RouteViewSet(
 ):
     queryset = Route.objects.select_related("source", "destination")
     serializer_class = RouteSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
         """Retrieve the routes with filters"""
-        source = self.request.query_params.get("source")
-        destination = self.request.query_params.get("destination")
+        source_city = self.request.query_params.get("source_city")
+        destination_city = self.request.query_params.get("destination_city")
         airport = self.request.query_params.get("airport")
 
         queryset = self.queryset
 
-        if source:
-            queryset = queryset.filter(source__name__icontains=source)
+        if source_city:
+            queryset = queryset.filter(
+                source__closest_big_city__icontains=source_city
+            )
 
-        if destination:
-            queryset = queryset.filter(destination__name__icontains=destination)
+        if destination_city:
+            queryset = queryset.filter(
+                destination__closest_big_city__icontains=destination_city
+            )
 
         if airport:
             queryset = queryset.filter(
@@ -122,7 +127,7 @@ class CrewViewSet(
 ):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class FlightViewSet(
@@ -143,7 +148,7 @@ class FlightViewSet(
         )
     )
     serializer_class = FlightSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
         """Retrieve the flights with filters"""
@@ -163,7 +168,9 @@ class FlightViewSet(
             queryset = queryset.filter(route__id=int(route_id_str))
 
         if departure_time:
-            departure_time = datetime.strptime(departure_time, "%Y-%m-%d %H:%M")
+            departure_time = datetime.strptime(
+                departure_time, "%Y-%m-%d %H:%M"
+            )
             queryset = queryset.filter(departure_time=departure_time)
 
         return queryset.distinct()
