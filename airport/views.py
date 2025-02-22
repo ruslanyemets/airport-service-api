@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from django.db.models import F, Count, Q
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import mixins, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -154,6 +156,29 @@ class RouteViewSet(
 
         return RouteSerializer
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source_city",
+                type=OpenApiTypes.STR,
+                description="Filter by source city (ex. ?source_city=London)",
+            ),
+            OpenApiParameter(
+                "destination_city",
+                type=OpenApiTypes.STR,
+                description="Filter by destination city (ex. ?destination_city=Paris)",
+            ),
+            OpenApiParameter(
+                "airport",
+                type=OpenApiTypes.STR,
+                description="Filter by airport name (ex. ?airport=Heathrow)",
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of routes"""
+        return super().list(request, *args, **kwargs)
+
 
 class CrewViewSet(
     mixins.CreateModelMixin,
@@ -218,6 +243,32 @@ class FlightViewSet(
             return FlightDetailSerializer
 
         return FlightSerializer
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "country",
+                type=OpenApiTypes.STR,
+                description="Filter by country (ex. ?country=Germany)",
+            ),
+            OpenApiParameter(
+                "route",
+                type=OpenApiTypes.INT,
+                description="Filter by route id (ex. ?route=2)",
+            ),
+            OpenApiParameter(
+                "departure_time",
+                type=OpenApiTypes.DATETIME,
+                description=(
+                        "Filter by datetime of departure "
+                        "(ex. ?departure_time=2021-08-25+15:00)"
+                ),
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of flights"""
+        return super().list(request, *args, **kwargs)
 
 
 class OrderPagination(PageNumberPagination):
