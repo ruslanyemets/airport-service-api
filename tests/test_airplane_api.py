@@ -35,15 +35,6 @@ def sample_airplane(**params):
     return Airplane.objects.create(**defaults)
 
 
-# def create_airplane(**params):
-#     return Airplane.objects.create(
-#         name="Another airplane",
-#         rows=40,
-#         seats_in_row=8,
-#         airplane_type=AirplaneType.objects.create(name="Boeing 777"),
-#     )
-
-
 def image_upload_url(airplane_id):
     """Return URL for airplane image upload"""
     return reverse("airport:airplane-upload-image", args=[airplane_id])
