@@ -54,18 +54,12 @@ class AuthenticatedFlightApiTests(TestCase):
         )
         self.client.force_authenticate(self.user)
         self.flight = sample_flight()
-        self.serializer = self.remove_ticket_field(FlightListSerializer(self.flight).data.copy())
+        self.serializer = self.remove_ticket_field(
+            FlightListSerializer(self.flight).data.copy()
+        )
         self.new_route = sample_route(
-                source=create_airport(
-                "LAX",
-                "Los Angeles",
-                "USA"
-            ),
-            destination=create_airport(
-                "JFK International",
-                "New York",
-                "USA"
-            )
+            source=create_airport("LAX", "Los Angeles", "USA"),
+            destination=create_airport("JFK International", "New York", "USA"),
         )
         self.new_departure_time = timezone.make_aware(
             datetime.strptime("2025-04-05 10:00:00", "%Y-%m-%d %H:%M:%S")
@@ -91,8 +85,12 @@ class AuthenticatedFlightApiTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         for resp_item, ser_item in zip(res.data, serializer.data):
             self.assertEqual(resp_item["id"], ser_item["id"])
-            self.assertEqual(resp_item["departure_time"], ser_item["departure_time"])
-            self.assertEqual(resp_item["arrival_time"], ser_item["arrival_time"])
+            self.assertEqual(
+                resp_item["departure_time"], ser_item["departure_time"]
+            )
+            self.assertEqual(
+                resp_item["arrival_time"], ser_item["arrival_time"]
+            )
 
     def test_filter_flights_by_country(self):
         flight_2 = self.new_flight
@@ -100,7 +98,9 @@ class AuthenticatedFlightApiTests(TestCase):
         res = self.client.get(FLIGHT_URL, {"country": "USA"})
 
         serializer_1 = self.serializer
-        serializer_2 = self.remove_ticket_field(FlightListSerializer(flight_2).data.copy())
+        serializer_2 = self.remove_ticket_field(
+            FlightListSerializer(flight_2).data.copy()
+        )
 
         res_data = [self.remove_ticket_field(item.copy()) for item in res.data]
 
@@ -113,7 +113,9 @@ class AuthenticatedFlightApiTests(TestCase):
         res = self.client.get(FLIGHT_URL, {"route": self.new_route.id})
 
         serializer_1 = self.serializer
-        serializer_2 = self.remove_ticket_field(FlightListSerializer(flight_2).data.copy())
+        serializer_2 = self.remove_ticket_field(
+            FlightListSerializer(flight_2).data.copy()
+        )
 
         res_data = [self.remove_ticket_field(item.copy()) for item in res.data]
 
@@ -123,12 +125,18 @@ class AuthenticatedFlightApiTests(TestCase):
     def test_filter_flights_by_departure_time(self):
         flight_2 = self.new_flight
 
-        departure_time_str = self.new_flight.departure_time.strftime("%Y-%m-%d %H:%M")
+        departure_time_str = (
+            self.new_flight.departure_time.strftime("%Y-%m-%d %H:%M")
+        )
 
-        res = self.client.get(FLIGHT_URL, {"departure_time": departure_time_str})
+        res = self.client.get(
+            FLIGHT_URL, {"departure_time": departure_time_str}
+        )
 
         serializer_1 = self.serializer
-        serializer_2 = self.remove_ticket_field(FlightListSerializer(flight_2).data.copy())
+        serializer_2 = self.remove_ticket_field(
+            FlightListSerializer(flight_2).data.copy()
+        )
 
         res_data = [self.remove_ticket_field(item.copy()) for item in res.data]
 
@@ -159,24 +167,17 @@ class AuthenticatedFlightApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
+
 class AdminFlightApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            "admin@admin.com", "test_password_12345", is_staff=True
+            "admin@example.com", "test_password_12345", is_staff=True
         )
         self.client.force_authenticate(self.user)
         self.new_route = sample_route(
-            source=create_airport(
-                "LAX",
-                "Los Angeles",
-                "USA"
-            ),
-            destination=create_airport(
-                "JFK International",
-                "New York",
-                "USA"
-            )
+            source=create_airport("LAX", "Los Angeles", "USA"),
+            destination=create_airport("JFK International", "New York", "USA"),
         )
         self.new_flight = sample_flight(route=self.new_route)
 

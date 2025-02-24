@@ -166,7 +166,9 @@ class RouteViewSet(
             OpenApiParameter(
                 "destination_city",
                 type=OpenApiTypes.STR,
-                description="Filter by destination city (ex. ?destination_city=Paris)",
+                description=(
+                    "Filter by destination city (ex. ?destination_city=Paris)"
+                ),
             ),
             OpenApiParameter(
                 "airport",
@@ -262,7 +264,7 @@ class FlightViewSet(
                 type=OpenApiTypes.DATETIME,
                 description=(
                         "Filter by datetime of departure "
-                        "(ex. ?departure_time=2021-08-25+15:00)"
+                        "(ex. ?departure_time=2025-08-25+15:00)"
                 ),
             ),
         ]

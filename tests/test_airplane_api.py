@@ -100,7 +100,7 @@ class AdminAirplaneApiTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            "admin@admin.com", "test_password_12345", is_staff=True
+            "admin@example.com", "test_password_12345", is_staff=True
         )
         self.client.force_authenticate(self.user)
         self.new_airplane_type = create_airplane_type("Boeing 777")
