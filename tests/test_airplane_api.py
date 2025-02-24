@@ -18,8 +18,12 @@ from airport.serializers import (
 AIRPLANE_URL = reverse("airport:airplane-list")
 
 
+def create_airplane_type(name):
+    return AirplaneType.objects.get_or_create(name=name)[0]
+
+
 def sample_airplane(**params):
-    airplane_type = AirplaneType.objects.create(name="Boeing 737")
+    airplane_type, _ = AirplaneType.objects.get_or_create(name="Boeing 737")
     defaults = {
         "name": "Sample airplane",
         "rows": 30,
@@ -31,13 +35,13 @@ def sample_airplane(**params):
     return Airplane.objects.create(**defaults)
 
 
-def create_airplane(**params):
-    return Airplane.objects.create(
-        name="Another airplane",
-        rows=40,
-        seats_in_row=8,
-        airplane_type=AirplaneType.objects.create(name="Boeing 777"),
-    )
+# def create_airplane(**params):
+#     return Airplane.objects.create(
+#         name="Another airplane",
+#         rows=40,
+#         seats_in_row=8,
+#         airplane_type=AirplaneType.objects.create(name="Boeing 777"),
+#     )
 
 
 def image_upload_url(airplane_id):
@@ -66,10 +70,11 @@ class AuthenticatedAirplaneApiTests(TestCase):
             "test_password_12345",
         )
         self.client.force_authenticate(self.user)
+        self.new_airplane_type = create_airplane_type("Airbus A320")
 
     def test_list_airplanes(self):
         sample_airplane()
-        create_airplane()
+        sample_airplane()
 
         res = self.client.get(AIRPLANE_URL)
 
@@ -89,12 +94,11 @@ class AuthenticatedAirplaneApiTests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_create_airplane_forbidden(self):
-        airplane_type = AirplaneType.objects.create(name="Boeing 737")
         payload = {
             "name": "Sample airplane",
             "rows": 30,
             "seats_in_row": 6,
-            "airplane_type": airplane_type.id,
+            "airplane_type": self.new_airplane_type.id,
         }
         res = self.client.post(AIRPLANE_URL, payload)
 
@@ -108,14 +112,14 @@ class AdminAirplaneApiTests(TestCase):
             "admin@admin.com", "test_password_12345", is_staff=True
         )
         self.client.force_authenticate(self.user)
+        self.new_airplane_type = create_airplane_type("Boeing 777")
 
     def test_create_airplane(self):
-        airplane_type = AirplaneType.objects.create(name="Boeing 737")
         payload = {
             "name": "Sample airplane",
             "rows": 30,
             "seats_in_row": 6,
-            "airplane_type": airplane_type.id,
+            "airplane_type": self.new_airplane_type.id,
         }
         res = self.client.post(AIRPLANE_URL, payload)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -126,12 +130,11 @@ class AdminAirplaneApiTests(TestCase):
         self.assertEqual(payload["airplane_type"], airplane.airplane_type.id)
 
     def test_put_airplane_not_allowed(self):
-        airplane_type = AirplaneType.objects.create(name="Boeing 777")
         payload = {
             "name": "Some airplane",
             "rows": 40,
             "seats_in_row": 8,
-            "airplane_type": airplane_type.id,
+            "airplane_type": self.new_airplane_type.id,
         }
 
         airplane = sample_airplane()
@@ -185,7 +188,7 @@ class AirplaneImageUploadTests(TestCase):
 
     def test_post_image_to_airport_list_should_not_work(self):
         url = AIRPLANE_URL
-        airplane_type = AirplaneType.objects.create(name="Boeing 777")
+        airplane_type = create_airplane_type("Airbus A320")
         with tempfile.NamedTemporaryFile(suffix=".jpg") as ntf:
             img = Image.new("RGB", (10, 10))
             img.save(ntf, format="JPEG")
