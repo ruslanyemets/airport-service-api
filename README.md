@@ -69,7 +69,7 @@ docker-compose up
 
 Install fixture to try API with demo-data:
 
-```docker compose exec airport python manage.py loaddata airport_service_api_db_data.json```
+```docker-compose exec airport python manage.py loaddata airport_service_api_db_data.json```
 
 
 ****
@@ -87,7 +87,7 @@ Or create superuser and use created username and password to log in:
 
 ```python manage.py createsuperuser``` - for local run
 
-```docker compose exec airport python manage.py createsuperuser``` - for run with docker
+```docker-compose exec airport python manage.py createsuperuser``` - for run with docker
 
 
 ****
@@ -98,7 +98,7 @@ To run tests for the application, use the following command:
 
 ```python manage.py test``` - for local run
 
-```docker compose exec airport python manage.py test``` - for run with docker
+```docker-compose exec airport python manage.py test``` - for run with docker
 
 
 ****
@@ -140,6 +140,13 @@ To run tests for the application, use the following command:
   -  in list view: total seats capacity and total available seats
   -  in detail view: taken places are shown
 * Pagination realized for orders only
+
+
+****
+
+## Schema
+
+![Website interface](schema.png)
 
 
 ****

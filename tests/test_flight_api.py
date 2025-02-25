@@ -83,13 +83,22 @@ class AuthenticatedFlightApiTests(TestCase):
         serializer = FlightListSerializer(flights, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+
+        resp_ids = {item["id"] for item in res.data}
+        expected_ids = {item["id"] for item in serializer.data}
+
+        self.assertEqual(resp_ids, expected_ids)
+        self.assertEqual(len(res.data), len(serializer.data))
+
         for resp_item, ser_item in zip(res.data, serializer.data):
-            self.assertEqual(resp_item["id"], ser_item["id"])
             self.assertEqual(
                 resp_item["departure_time"], ser_item["departure_time"]
             )
             self.assertEqual(
                 resp_item["arrival_time"], ser_item["arrival_time"]
+            )
+            self.assertEqual(
+                resp_item["flight_duration"], ser_item["flight_duration"]
             )
 
     def test_filter_flights_by_country(self):
