@@ -239,3 +239,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderListSerializer(OrderSerializer):
     tickets = TicketListSerializer(many=True, read_only=True)
+
+
+class OrderDetailSerializer(OrderSerializer):
+    tickets = TicketListSerializer(many=True, read_only=True)

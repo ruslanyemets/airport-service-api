@@ -37,7 +37,8 @@ from airport.serializers import (
     OrderListSerializer,
     AirplaneListSerializer,
     AirplaneDetailSerializer,
-    AirplaneImageSerializer
+    AirplaneImageSerializer,
+    OrderDetailSerializer
 )
 
 
@@ -282,6 +283,7 @@ class OrderPagination(PageNumberPagination):
 class OrderViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
     GenericViewSet,
 ):
     queryset = Order.objects.prefetch_related(
@@ -297,6 +299,9 @@ class OrderViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return OrderListSerializer
+
+        if self.action == "retrieve":
+            return OrderDetailSerializer
 
         return OrderSerializer
 
