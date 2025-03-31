@@ -5,6 +5,7 @@ from datetime import datetime
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import UniqueConstraint
 from django.utils.text import slugify
 
 
@@ -64,9 +65,9 @@ class Airport(models.Model):
 
 class Route(models.Model):
     distance = models.IntegerField()
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE)
+    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departing_routes")
     destination = models.ForeignKey(
-        Airport, on_delete=models.CASCADE, related_name="routes"
+        Airport, on_delete=models.CASCADE, related_name="arriving_routes"
     )
 
     class Meta:
@@ -88,7 +89,7 @@ class Crew(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def __str__(self):
-        return self.first_name + " " + self.last_name
+        return self.full_name
 
 
 class Flight(models.Model):
@@ -172,20 +173,17 @@ class Ticket(models.Model):
             ValidationError,
         )
 
-    def save(
-            self,
-            force_insert=False,
-            force_update=False,
-            using=None,
-            update_fields=None,
-    ):
+    def save(self, *args, **kwargs):
         self.full_clean()
-        return super(Ticket, self).save(
-            force_insert, force_update, using, update_fields
-        )
+        return super().save(*args, **kwargs)
 
     class Meta:
-        unique_together = ("flight", "row", "seat")
+        constraints = [
+            UniqueConstraint(
+                fields=["flight", "row", "seat"],
+                name="unique_ticket"
+            )
+        ]
         ordering = ["row", "seat"]
 
     def __str__(self):
