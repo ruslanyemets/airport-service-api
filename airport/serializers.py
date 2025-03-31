@@ -36,7 +36,7 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
 class AirplaneListSerializer(AirplaneSerializer):
     airplane_type = serializers.SlugRelatedField(
-        many=False, read_only=True, slug_field="name"
+        read_only=True, slug_field="name"
     )
 
     class Meta:
@@ -53,7 +53,7 @@ class AirplaneListSerializer(AirplaneSerializer):
 
 
 class AirplaneDetailSerializer(AirplaneSerializer):
-    airplane_type = AirplaneTypeSerializer(many=False, read_only=True)
+    airplane_type = AirplaneTypeSerializer(read_only=True)
 
     class Meta:
         model = Airplane
@@ -82,7 +82,7 @@ class CountrySerializer(serializers.ModelSerializer):
 
 class AirportSerializer(serializers.ModelSerializer):
     country = serializers.SlugRelatedField(
-        many=False, read_only=True, slug_field="name"
+        read_only=True, slug_field="name"
     )
 
     class Meta:
@@ -110,8 +110,8 @@ class RouteListSerializer(RouteSerializer):
 
 
 class RouteDetailSerializer(RouteSerializer):
-    source = AirportSerializer(many=False, read_only=True)
-    destination = AirportSerializer(many=False, read_only=True)
+    source = AirportSerializer(read_only=True)
+    destination = AirportSerializer(read_only=True)
 
     class Meta:
         model = Route
@@ -190,7 +190,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class TicketListSerializer(TicketSerializer):
-    flight = FlightListSerializer(many=False, read_only=True)
+    flight = FlightListSerializer(read_only=True)
 
 
 class TicketSeatsSerializer(TicketSerializer):
@@ -201,8 +201,8 @@ class TicketSeatsSerializer(TicketSerializer):
 
 class FlightDetailSerializer(FlightSerializer):
     crew = CrewSerializer(many=True, read_only=True)
-    airplane = AirplaneSerializer(many=False, read_only=True)
-    route = RouteListSerializer(many=False, read_only=True)
+    airplane = AirplaneSerializer(read_only=True)
+    route = RouteListSerializer(read_only=True)
     taken_places = TicketSeatsSerializer(
         source="tickets", many=True, read_only=True
     )
@@ -228,8 +228,11 @@ class OrderSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             tickets_data = validated_data.pop("tickets")
             order = Order.objects.create(**validated_data)
-            for ticket_data in tickets_data:
-                Ticket.objects.create(order=order, **ticket_data)
+            tickets = [
+                Ticket(order=order, **ticket_data)
+                for ticket_data in tickets_data
+            ]
+            Ticket.objects.bulk_create(tickets)
             return order
 
     class Meta:
